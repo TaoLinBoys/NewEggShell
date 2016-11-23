@@ -23,7 +23,9 @@ void  commandLine(char * string , char ** commandArr ){
   commandArr[ctr] = 0;
 }
 
-
+int changeDirectory(){
+  //chdir(path);
+}
 int main(){
  
   printf("------------------------------MY SHELL------------------------------\n\n");
@@ -49,6 +51,7 @@ int main(){
   }
   return 0;
 }
+
 
 
 
