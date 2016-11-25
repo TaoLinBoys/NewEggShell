@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/wait.h>
 
 
 void printPath(){
@@ -11,7 +12,6 @@ void printPath(){
 }
 
 void  commandLine(char * string , char ** commandArr ){
-  
   char * input = string;
   int ctr = 0;
   fgets(string,sizeof(string),stdin);
@@ -23,7 +23,23 @@ void  commandLine(char * string , char ** commandArr ){
   commandArr[ctr] = 0;
 }
 
-int changeDirectory(){
+void changeDirectory(char ** commandArr){
+  if (*(++commandArr) != NULL){//check if directory is specified 
+    char path[256];
+    if (!(**commandArr == '/')){ //if commandArr does not start with /
+      getcwd(path,256); //copy path
+      strcat(path,"/"); //turn path into path/
+      strcat(path,*commandArr); // turn path/ into path/commandArr
+    }else{
+      strcat(path,*commandArr);
+    }
+    if (chdir(path)){
+      printf("you broke the shell! (directory doesnt exist)\n");
+    }
+  }else{
+    printf("you broke the shell! (no directory specified)\n");
+  }
+    
   //chdir(path);
 }
 int main(){
@@ -31,8 +47,6 @@ int main(){
   printf("------------------------------MY SHELL------------------------------\n\n");
 
   while (1){
-    wait(1);
- 
     printPath();
     
     char string[256];
@@ -41,14 +55,22 @@ int main(){
 
     //running it
     int ppid = getpid();
-    fork();
-    if(ppid != getpid()){
-      if (execvp(commandArr[0], commandArr) == -1){
-	printf("riperoni pepperoni shelleroni (command not found): %s\n", commandArr[0]);
-      }
-      exit(0);
+    
+    if (strcmp(*commandArr,"cd") == 0){
+      changeDirectory(commandArr);
     }
-  }
+    else{
+      fork();
+      if(ppid != getpid()){
+	if (execvp(commandArr[0], commandArr) == -1){
+	  printf("riperoni pepperoni shelleroni (command not found): %s\n", commandArr[0]);
+	}
+	exit(0);
+      }
+      wait(NULL);
+    }
+    }
+  
   return 0;
 }
 
