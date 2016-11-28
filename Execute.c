@@ -12,30 +12,40 @@ void printPath(){
 }
 
 void  commandLine(char * string , char ** commandArr ){
-  char * input = string;
-  int ctr = 0;
-  fgets(string,sizeof(string),stdin);
+  //why does strlen and sizeof(string) not work? 
+  fgets(string,1000,stdin);
   *(strchr(string, '\n')) = 0; //replaces \n with null
-  while(input){
-    commandArr[ctr] = strsep(&input," ");
+
+  //printf("string = %s\n",string);
+  int ctr = 0;
+  while(string){
+    commandArr[ctr] = strsep(&string," ");
+    //printf("%s, ",commandArr[ctr]);
     ctr++;
   }
+  
   commandArr[ctr] = 0;
 }
 
 void changeDirectory(char ** commandArr){
-  if (*(++commandArr) != NULL){//check if directory is specified 
+  //commandArr = ["cd", "directory",null]
+  if (*(++commandArr) != NULL){//check if directory is specified
     char path[256];
-    if (!(**commandArr == '/')){ //if commandArr does not start with /
+    
+    if (**commandArr != '/'){ //if commandArr does not start with /
       getcwd(path,256); //copy path
+      //printf("path = %s\n",path);
       strcat(path,"/"); //turn path into path/
+      //printf("path + / = %s\n",path);
       strcat(path,*commandArr); // turn path/ into path/commandArr
+      //printf("path + / + commandArr = %s\n",path);
     }else{
       strcat(path,*commandArr);
     }
     if (chdir(path)){
       printf("you broke the shell! (directory doesnt exist)\n");
     }
+    
   }else{
     printf("you broke the shell! (no directory specified)\n");
   }
@@ -49,8 +59,8 @@ int main(){
   while (1){
     printPath();
     
-    char string[256];
-    char * commandArr[100];
+    char string[1000];
+    char * commandArr[256];
     commandLine(string,commandArr);
 
     //running it
