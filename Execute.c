@@ -3,7 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/wait.h>
-
+#include <sys/stat.h>
+#include <fcntl.h>
+int die(int pid){
+  kill(getpid(),SIGKILL);
+}
 
 void printPath(){
   char path[256];
@@ -12,7 +16,6 @@ void printPath(){
 }
 
 void  commandLine(char * string , char ** commandArr ){
-  //why does strlen and sizeof(string) not work? 
   fgets(string,1000,stdin);
   *(strchr(string, '\n')) = 0; //replaces \n with null
 
@@ -52,6 +55,9 @@ void changeDirectory(char ** commandArr){
     
   //chdir(path);
 }
+
+
+
 int main(){
  
   printf("------------------------------MY SHELL------------------------------\n\n");
@@ -69,14 +75,23 @@ int main(){
     if (strcmp(*commandArr,"cd") == 0){
       changeDirectory(commandArr);
     }
+    else if (strcmp(*commandArr,"exit") == 0){
+      die(getpid());
+    }
     else{
       fork();
       if(ppid != getpid()){
 	if (execvp(commandArr[0], commandArr) == -1){
 	  printf("riperoni pepperoni shelleroni (command not found): %s\n", commandArr[0]);
 	}
-	exit(0);
+	die(getpid());
       }
+      
+      umask(0);
+      int f = open("stdout.txt",O_CREAT | O_WRONLY, 0644);
+      
+      dup2(1,f);
+
       wait(NULL);
     }
     }
