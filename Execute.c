@@ -5,33 +5,55 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
+//exit
 int die(int pid){
   kill(getpid(),SIGKILL);
 }
 
+//printPath
 void printPath(){
   char path[256];
   getcwd(path, 256);
   printf("%s$ ", path);
 }
 
-void  commandLine(char * string , char ** commandArr ){
+
+//will return 0 if no piping detected
+//will return 1 if > detected
+//return 2 if < detected
+//return 3 if | detected
+int commandLine(char * string , char ** commandArr ){
   fgets(string,1000,stdin);
   *(strchr(string, '\n')) = 0; //replaces \n with null
 
   //printf("string = %s\n",string);
   int ctr = 0;
+  int pipe = 0;
+  
   while(string){
-    commandArr[ctr] = strsep(&string," ");
-    printf("%s, ",commandArr[ctr]);
+    
+    char*x = strsep(&string," ");
+    printf("%s, ",x);
+    if (strchr(x,'>')){ 
+      pipe = 1;
+    }else if (strchr(x,'<')){
+      pipe = 2;
+    }else if (strchr(x,'|')){
+      pipe = 3;
+    }else{  
+      commandArr[ctr] = x;
+    }
+    
     ctr++;
   }
   
   commandArr[ctr] = 0;
-  
+  return pipe;
 }
 
-void changeDirectory(char ** commandArr){
+//returns 0 if success, -1 if fail
+int changeDirectory(char ** commandArr){
   //commandArr = ["cd", "directory",null]
   if (*(++commandArr) != NULL){//check if directory is specified
     char path[256];
@@ -43,31 +65,27 @@ void changeDirectory(char ** commandArr){
       //printf("path + / = %s\n",path);
       strcat(path,*commandArr); // turn path/ into path/commandArr
       //printf("path + / + commandArr = %s\n",path);
+   
     }else{
       strcat(path,*commandArr);
+    
     }
     if (chdir(path)){
       printf("you broke the shell! (directory doesnt exist)\n");
+      return -1;
     }
+    return 0;
     
   }else{
     printf("you broke the shell! (no directory specified)\n");
+    return -1;
   }
     
      
 }
 
-int piping(char** commandArr){
-  //printf("piping\n");
-  while (*commandArr){
-    //printf("%s\n", *commandArr);
-    if (strcmp(*commandArr,">") == 0){
-      printf("aw shit");
-    }
-    
-    commandArr++;
-  }
-}
+
+
 
 
 int main(){
@@ -78,8 +96,10 @@ int main(){
     printPath();
     
     char string[1000];
-    char * commandArr[256]; 
-    commandLine(string,commandArr);
+    char * commandArr[256];
+
+    
+    int pipe = commandLine(string,commandArr);
 
     //running it
     int ppid = getpid();
@@ -93,19 +113,21 @@ int main(){
     else{
       fork();
       if(ppid != getpid()){
-	//0 = >
-	//1 = <
-	//2 = |
-	if (piping(commandArr) == 0){
+	
+	//1 = >
+	//2 = <
+	//3 = |
+	if (pipe == 1){
 	
 	  umask(0);
 	  int f = open("stdout.txt",O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	  dup2(f,1);
 	  close(f);
 	}
-	if (piping(commandArr) == 1){
+        else if (pipe = 2){
+	  
 	}
-	if (piping(commandArr) == 2){
+	else if (pipe = 3){
 	}
 	  
 	if (execvp(commandArr[0], commandArr) == -1){
@@ -114,7 +136,7 @@ int main(){
 	die(getpid());
       }
       
-
+      wait(0);
 
       
       
