@@ -42,10 +42,10 @@ int commandLine(char * string , char ** commandArr ){
       pipe = 3;
     }else{  
       commandArr[ctr] = x;
+      ctr++;
       //printf("put this in: %s, \n",x);
     }
     
-    ctr++;
   }
   
   commandArr[ctr] = 0;
@@ -132,10 +132,11 @@ int main(){
 	
 	if (pipe == 1){
 	  umask(0);
-	  printf("second value in commandArr: %s\n", commandArr[2]);
-	  int f = open(commandArr[2], O_CREAT | O_WRONLY | O_TRUNC, 0644);
+	  printf("second value in commandArr: %s\n", commandArr[1]);
+	  int f = open(commandArr[1], O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	  dup2(f,1);
 	  close(f);
+	  commandArr[1] = 0;
 	}
         else if (pipe = 2){
 	  
