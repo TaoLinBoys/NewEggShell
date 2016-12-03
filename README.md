@@ -7,10 +7,10 @@
 	- Has basic redirecting capabilities (< >)
 
 ##Attempted:
-	- we dont sux
+	- >>, but for some reason, I cannot get the file name in this function
 
 ##Bugs:
-	- we sux
+	- 
 	
 ##Files & Function Headers:
 ###Execute.c
