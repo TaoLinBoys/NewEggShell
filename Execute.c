@@ -34,7 +34,6 @@ int commandLine(char * string , char ** commandArr ){
   while(string){
     
     char*x = strsep(&string," ");
-    printf("%s, ",x);
     if (strchr(x,'>')){ 
       pipe = 1;
     }else if (strchr(x,'<')){
@@ -43,6 +42,7 @@ int commandLine(char * string , char ** commandArr ){
       pipe = 3;
     }else{  
       commandArr[ctr] = x;
+      //printf("put this in: %s, \n",x);
     }
     
     ctr++;
@@ -100,9 +100,21 @@ int main(){
 
     
     int pipe = commandLine(string,commandArr);
+    //printf("value of pipe: %d\n", pipe);
+    /*
+    //printingout the array
+    int ctr = 0;
+    printf("[ ");
+    while(commandArr[ctr]!=NULL){
+      printf("%s, ", commandArr[ctr]);
+      ctr++;
+    }
+    printf(" ]\n");
+    */
 
     //running it
     int ppid = getpid();
+
     
     if (strcmp(*commandArr,"cd") == 0){
       changeDirectory(commandArr);
@@ -117,10 +129,11 @@ int main(){
 	//1 = >
 	//2 = <
 	//3 = |
-	if (pipe == 1){
 	
+	if (pipe == 1){
 	  umask(0);
-	  int f = open("stdout.txt",O_CREAT | O_WRONLY | O_TRUNC, 0644);
+	  printf("second value in commandArr: %s\n", commandArr[2]);
+	  int f = open(commandArr[2], O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	  dup2(f,1);
 	  close(f);
 	}
