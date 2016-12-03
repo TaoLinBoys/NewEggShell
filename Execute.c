@@ -11,6 +11,11 @@ int die(int pid){
   kill(getpid(),SIGKILL);
 }
 
+int piper(char ** commandArr){
+	
+}
+
+
 //printPath
 void printPath(){
   char path[256];
@@ -135,14 +140,28 @@ int main(){
 	
 	if (pipe == 1){
 	  umask(0);
-	  //printf("second value in commandArr: %s\n", commandArr[1]);
+	  printf("second value in commandArr: %s\n", commandArr[1]);
 	  int f = open(commandArr[1], O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	  dup2(f,1);
 	  close(f);
 	  commandArr[1] = 0;
-	}else if (pipe == 2){
-	  
 	}else if (pipe == 3){
+	  int f = open("buffer.txt", O_CREAT | O_TRUNC, 0664);
+	  dup2(f,1);
+	  if(execvp(commandArr[0], commandArr  )== -1){
+		printf("command failed/n");
+	  }
+	  int cnt = 0;
+	  fgets(string , 1000, "buffer.txt");
+	  *(strchr(string, '\n'));
+	  while(string){
+		char * x = strcep(&string, " ");
+		commandArr[cnt] = x;
+		cnt ++;
+	  }
+	  close(f);
+	  commandArr[1] = 0; 
+	}else if (pipe == 2){
 	  
 	}else if (pipe == 4){
 	  int f = open(commandArr[1], O_APPEND, 0644);
