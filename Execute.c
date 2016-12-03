@@ -23,11 +23,12 @@ void  commandLine(char * string , char ** commandArr ){
   int ctr = 0;
   while(string){
     commandArr[ctr] = strsep(&string," ");
-    //printf("%s, ",commandArr[ctr]);
+    printf("%s, ",commandArr[ctr]);
     ctr++;
   }
   
   commandArr[ctr] = 0;
+  
 }
 
 void changeDirectory(char ** commandArr){
@@ -53,9 +54,20 @@ void changeDirectory(char ** commandArr){
     printf("you broke the shell! (no directory specified)\n");
   }
     
-  //chdir(path);
+     
 }
 
+int piping(char** commandArr){
+  //printf("piping\n");
+  while (*commandArr){
+    //printf("%s\n", *commandArr);
+    if (strcmp(*commandArr,">") == 0){
+      printf("aw shit");
+    }
+    
+    commandArr++;
+  }
+}
 
 
 int main(){
@@ -66,7 +78,7 @@ int main(){
     printPath();
     
     char string[1000];
-    char * commandArr[256];
+    char * commandArr[256]; 
     commandLine(string,commandArr);
 
     //running it
@@ -81,20 +93,33 @@ int main(){
     else{
       fork();
       if(ppid != getpid()){
+	//0 = >
+	//1 = <
+	//2 = |
+	if (piping(commandArr) == 0){
+	
+	  umask(0);
+	  int f = open("stdout.txt",O_CREAT | O_WRONLY | O_TRUNC, 0644);
+	  dup2(f,1);
+	  close(f);
+	}
+	if (piping(commandArr) == 1){
+	}
+	if (piping(commandArr) == 2){
+	}
+	  
 	if (execvp(commandArr[0], commandArr) == -1){
 	  printf("riperoni pepperoni shelleroni (command not found): %s\n", commandArr[0]);
 	}
 	die(getpid());
       }
       
-      umask(0);
-      int f = open("stdout.txt",O_CREAT | O_WRONLY, 0644);
-      
-      dup2(1,f);
 
-      wait(NULL);
+
+      
+      
     }
-    }
+  }
   
   return 0;
 }
