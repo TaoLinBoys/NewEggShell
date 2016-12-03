@@ -1,0 +1,10 @@
+  PID TTY          TIME CMD
+ 1662 pts/4    00:00:00 bash
+ 1731 pts/4    00:00:10 emacs
+ 1782 pts/4    00:00:00 make
+ 1783 pts/4    00:00:00 eggs
+ 1813 pts/4    00:00:00 make
+ 1814 pts/4    00:00:00 eggs
+ 1841 pts/4    00:00:00 make
+ 1842 pts/4    00:00:00 eggs
+ 1844 pts/4    00:00:00 ps

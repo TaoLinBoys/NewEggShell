@@ -34,12 +34,14 @@ int commandLine(char * string , char ** commandArr ){
   while(string){
     
     char*x = strsep(&string," ");
-    if (strchr(x,'>')){ 
-      pipe = 1;
+    if (strstr(x,">>")){ 
+      pipe = 4;
     }else if (strchr(x,'<')){
       pipe = 2;
     }else if (strchr(x,'|')){
       pipe = 3;
+    }else if (strchr(x,'>')){//had to change >> and >
+      pipe = 1;
     }else{  
       commandArr[ctr] = x;
       ctr++;
@@ -100,7 +102,7 @@ int main(){
 
     
     int pipe = commandLine(string,commandArr);
-    //printf("value of pipe: %d\n", pipe);
+    printf("value of pipe: %d\n", pipe);
     /*
     //printingout the array
     int ctr = 0;
@@ -129,20 +131,26 @@ int main(){
 	//1 = >
 	//2 = <
 	//3 = |
+	//4 = >>
 	
 	if (pipe == 1){
 	  umask(0);
-	  printf("second value in commandArr: %s\n", commandArr[1]);
+	  //printf("second value in commandArr: %s\n", commandArr[1]);
 	  int f = open(commandArr[1], O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	  dup2(f,1);
 	  close(f);
 	  commandArr[1] = 0;
-	}
-        else if (pipe = 2){
+	}else if (pipe == 2){
 	  
+	}else if (pipe == 3){
+	  
+	}else if (pipe == 4){
+	  int f = open(commandArr[1], O_APPEND, 0644);
+	  dup2(f,1);
+	  close(f);
+	  commandArr[1] = 0;
 	}
-	else if (pipe = 3){
-	}
+	
 	  
 	if (execvp(commandArr[0], commandArr) == -1){
 	  printf("riperoni pepperoni shelleroni (command not found): %s\n", commandArr[0]);
