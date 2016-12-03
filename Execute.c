@@ -28,36 +28,45 @@ void printPath(){
 //will return 1 if > detected
 //return 2 if < detected
 //return 3 if | detected
-int commandLine(char * string , char ** commandArr ){
+int commandLine(char * string , char ** commandArr, char ** commandArr2 ){
   fgets(string,1000,stdin);
   *(strchr(string, '\n')) = 0; //replaces \n with null
 
   //printf("string = %s\n",string);
   int ctr = 0;
   int pipe = 0;
-  
+  char** editme = commandArr;
   while(string){
     
     char*x = strsep(&string," ");
     if (strstr(x,">>")){ 
       pipe = 4;
+      editme[ctr] = 0;
+      editme = commandArr2;
+      ctr = 0;
     }else if (strchr(x,'<')){
       pipe = 2;
+      editme[ctr] = 0;
+      editme = commandArr2;
+      ctr = 0;
     }else if (strchr(x,'|')){
       pipe = 3;
-	  commandArr[ctr] = x;
-      ctr++;
+      editme[ctr] = 0;
+      editme = commandArr2;
+      ctr = 0;
     }else if (strchr(x,'>')){//had to change >> and >
       pipe = 1;
-    }else{  
-      commandArr[ctr] = x;
+      editme[ctr] = 0;
+      editme = commandArr2;
+      ctr = 0;
+    }else{
+      editme[ctr] = x;
       ctr++;
-      printf("put this in: %s, \n",x);
     }
     
   }
+  editme[ctr] = 0;
   
-  commandArr[ctr] = 0;
   return pipe;
 }
 
@@ -96,7 +105,6 @@ int changeDirectory(char ** commandArr){
 
 
 
-
 int main(){
  
   printf("------------------------------MY SHELL------------------------------\n\n");
@@ -106,9 +114,10 @@ int main(){
     
     char string[1000];
     char * commandArr[256];
-
+    char * commandArr2[256];
     
-    int pipe = commandLine(string,commandArr);
+    int pipe = commandLine(string,commandArr,commandArr2);
+    
     printf("value of pipe: %d\n", pipe);
     /*
     //printingout the array
@@ -139,56 +148,59 @@ int main(){
 	//2 = <
 	//3 = |
 	//4 = >>
-	
-	if (pipe == 1){
+	if (pipe == 0){
+	  if (execvp(commandArr[0], commandArr) == -1){
+	    printf("riperoni pepperoni shelleroni (command not found): %s\n", commandArr[0]);
+	  }
+	}
+	else if (pipe == 1){
 	  umask(0);
 	  printf("second value in commandArr: %s\n", commandArr[1]);
-	  int f = open(commandArr[1], O_CREAT | O_WRONLY | O_TRUNC, 0644);
+	  int f = open(commandArr2[0], O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	  dup2(f,1);
 	  close(f);
-	  commandArr[1] = 0;
+	  if (execvp(commandArr[0], commandArr) == -1){
+	    printf("riperoni pepperoni shelleroni (command not found): %s\n", commandArr[0]);
+	  }
 	}else if (pipe == 3){
-	  char * commandArr2[256];
-	  int cnt =0;
-	  printf("%s commandArr\n", commandArr[0]);
-	  while(strcmp(commandArr[cnt], "|" ) != 0){
-			printf("%s commandArr %d", commandArr[cnt], cnt);
-			strcat(commandArr2[cnt], commandArr[cnt]);
-			cnt ++;
-	  }
-	  cnt++;
-	  printf("exits first loop\n");
-	  int cnt2 = cnt;
-	  while(commandArr[cnt]){
-		  strcpy(commandArr[cnt-cnt2] , commandArr[cnt]);
-		  cnt ++;
-	  }
-	  commandArr[cnt2+1] = 0;
-	  
-	  int f = open("buffer.txt", O_CREAT | O_TRUNC, 0664);
-	printf("opens buffer\n");
+	  int f;
 	  dup2(f,1);
-	  execvp(commandArr[0], commandArr);
-	  close(f);
-	  commandArr[1] = 0; 
+	  if (execvp(commandArr[0],commandArr) == -1){
+	     printf("riperoni pepperoni shelleroni (command not found): %s\n", commandArr[0]);
+	  }
+	  
+	  int cpid = getpid();
+	  fork();
+	  if (cpid != getpid()){
+	    printf("wtf");
+	    dup2(f,0);
+	    if (execvp(commandArr2[0],commandArr2) == -1){
+	      printf("riperoni pepperoni shelleroni (command not found): %s\n", commandArr2[0]);
+	    }
+	  }
+	  
 	}else if (pipe == 2){
-	  
+	  int f = open(commandArr2[0], O_RDONLY, 0644);
+	  dup2(f,0);
+	  close(f);
+	  if (execvp(commandArr[0], commandArr) == -1){
+	    printf("riperoni pepperoni shelleroni (command not found): %s\n", commandArr[0]);
+	  }
 	}else if (pipe == 4){
-	  int f = open(commandArr[1], O_APPEND, 0644);
+	  int f = open(commandArr2[0], O_CREAT | O_APPEND, 0644);
 	  dup2(f,1);
 	  close(f);
-	  commandArr[1] = 0;
+	  if (execvp(commandArr[0], commandArr) == -1){
+		  printf("riperoni pepperoni shelleroni (command not found): %s\n", commandArr[0]);
+	  }
 	}
 	
 	  
-	if (execvp(commandArr[0], commandArr) == -1){
-	  printf("riperoni pepperoni shelleroni (command not found): %s\n", commandArr[0]);
-	}
+
 	die(getpid());
       }
       
       wait(0);
-
       
       
     }
