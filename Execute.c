@@ -45,12 +45,14 @@ int commandLine(char * string , char ** commandArr ){
       pipe = 2;
     }else if (strchr(x,'|')){
       pipe = 3;
+	  commandArr[ctr] = x;
+      ctr++;
     }else if (strchr(x,'>')){//had to change >> and >
       pipe = 1;
     }else{  
       commandArr[ctr] = x;
       ctr++;
-      //printf("put this in: %s, \n",x);
+      printf("put this in: %s, \n",x);
     }
     
   }
@@ -146,19 +148,27 @@ int main(){
 	  close(f);
 	  commandArr[1] = 0;
 	}else if (pipe == 3){
+	  char * commandArr2[256];
+	  int cnt =0;
+	  printf("%s commandArr\n", commandArr[0]);
+	  while(strcmp(commandArr[cnt], "|" ) != 0){
+			printf("%s commandArr %d", commandArr[cnt], cnt);
+			strcat(commandArr2[cnt], commandArr[cnt]);
+			cnt ++;
+	  }
+	  cnt++;
+	  printf("exits first loop\n");
+	  int cnt2 = cnt;
+	  while(commandArr[cnt]){
+		  strcpy(commandArr[cnt-cnt2] , commandArr[cnt]);
+		  cnt ++;
+	  }
+	  commandArr[cnt2+1] = 0;
+	  
 	  int f = open("buffer.txt", O_CREAT | O_TRUNC, 0664);
+	printf("opens buffer\n");
 	  dup2(f,1);
-	  if(execvp(commandArr[0], commandArr  )== -1){
-		printf("command failed/n");
-	  }
-	  int cnt = 0;
-	  fgets(string , 1000, "buffer.txt");
-	  *(strchr(string, '\n'));
-	  while(string){
-		char * x = strcep(&string, " ");
-		commandArr[cnt] = x;
-		cnt ++;
-	  }
+	  execvp(commandArr[0], commandArr);
 	  close(f);
 	  commandArr[1] = 0; 
 	}else if (pipe == 2){
